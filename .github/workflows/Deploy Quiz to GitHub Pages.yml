@@ -1,0 +1,48 @@
+# Nome del workflow
+name: Deploy Quiz to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Clona il repo
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      # 2) Imposta Node LTS
+      - name: Setup Node.js 🔧
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3) Installa dipendenze del progetto
+      - name: Install deps 📦
+        run: npm ci || npm install
+
+      # 4) (opzionale) installa i plugin Tailwind usati nel config, se presenti
+      - name: Install Tailwind plugins (optional) 🎯
+        run: |
+          npm i -D @tailwindcss/forms @tailwindcss/typography @tailwindcss/aspect-ratio @tailwindcss/line-clamp || true
+
+      # 5) Compila Tailwind in cloud -> public/tailwind.css
+      - name: Build Tailwind CSS 🎨
+        run: npx tailwindcss@latest -c tailwind.config.js -i ./src/tailwind.css -o ./public/tailwind.css --minify
+
+      # 6) Build React (CRA)
+      - name: Build React ⚙️
+        run: npm run build
+
+      # 7) Pubblica su GitHub Pages (branch gh-pages)
+      - name: Deploy 🚀
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
