@@ -10,7 +10,6 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -18,24 +17,18 @@ jobs:
       - name: Setup Node.js 🔧
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '20'   # niente cache: non abbiamo lock file
 
       - name: Install deps 📦
-        run: npm ci || npm install
+        run: npm install
 
-      # 👇 installiamo il CLI e i plugin (solo in CI, non tocca il tuo repo)
-      - name: Install Tailwind CLI & plugins 🎨
+      # Build Tailwind: prima prova con npx "usa e getta".
+      # Se la rete del runner avesse un hickup, installa il CLI e riprova.
+      - name: Build Tailwind CSS 🎨
         run: |
-          npm i -D tailwindcss@^3 \
-                 @tailwindcss/forms \
-                 @tailwindcss/typography \
-                 @tailwindcss/aspect-ratio \
-                 @tailwindcss/line-clamp
-
-      # 👇 ora il bin "tailwindcss" esiste e si può invocare
-      - name: Build Tailwind CSS ✂️
-        run: npx tailwindcss -c tailwind.config.js -i ./src/tailwind.css -o ./public/tailwind.css --minify
+          npx --yes tailwindcss@3 -c tailwind.config.js -i ./src/tailwind.css -o ./public/tailwind.css --minify \
+          || (npm i -D tailwindcss@^3 @tailwindcss/forms @tailwindcss/typography @tailwindcss/aspect-ratio @tailwindcss/line-clamp \
+              && npx tailwindcss -c tailwind.config.js -i ./src/tailwind.css -o ./public/tailwind.css --minify)
 
       - name: Build React ⚙️
         run: npm run build
