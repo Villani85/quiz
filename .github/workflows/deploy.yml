@@ -1,18 +1,33 @@
+# Nome del nostro robot/workflow
 name: Deploy Quiz to GitHub Pages
+
+# Il robot si attiva ogni volta che salvi (push) sul ramo "main"
 on:
   push:
     branches:
       - main
+
+# I compiti che il robot deve eseguire
 jobs:
   build-and-deploy:
+    # AGGIUNGI QUESTE DUE RIGHE QUI SOTTO
+    permissions:
+      contents: write
+
+    # Il robot userà un computer con sistema operativo Ubuntu
     runs-on: ubuntu-latest
     steps:
+      # 1. Scarica una copia del tuo codice nel suo ambiente
       - name: Checkout 🛎️
         uses: actions/checkout@v4
+
+      # 2. Installa il software necessario (Node.js) e le dipendenze del progetto
       - name: Install and Build 🔧
         run: |
           npm install
           npm run build
+
+      # 4. Prende la cartella "build" e la pubblica su GitHub Pages
       - name: Deploy 🚀
         uses: peaceiris/actions-gh-pages@v4
         with:
